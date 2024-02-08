@@ -16,4 +16,14 @@ const editOrder=async(req,res)=>{
     
 }
 
-export {addOrder}
+const getOrderWithProductDetails=async(req,res)=>{
+    try{
+        const orderDetails=await order.findById(req.params.id).populate('items.product').exec();
+
+        return res.json(orderDetails);
+    }catch(err){
+        console.log(err.message)
+    }
+}
+
+export {addOrder,getOrderWithProductDetails}

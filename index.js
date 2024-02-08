@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import dotenv from 'dotenv';
 import userRouter from "./routes/userRouter.js"
 import productRouter from "./routes/productRouter.js"
+import billRouter from "./routes/billRouter.js";
 
 dotenv.config();
 const app=express();
@@ -14,6 +15,10 @@ app.use("/auth/user",userRouter);
 
 // products router
 app.use("/products",productRouter);
+
+// order bill
+app.use("/bill",billRouter);
+
 
 // mongodb connection
 mongoose.connect(process.env.CONNECT_STR).then(()=>{

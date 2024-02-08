@@ -18,6 +18,10 @@ const products=new mongoose.Schema({
     },
     size:{
         type:String,
+    },
+    type:{
+        type:String,
+        require:[true,"enter the product category"]
     }
 //  need to add the image field
 
