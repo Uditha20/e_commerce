@@ -1,8 +1,10 @@
 import user from "../model/userModel.js"
 import bcrypt from 'bcryptjs'
+import asyncErrorHandler from "../utils/asyncErrorHandler.js";
 
-const registerUser = async (req, res) => {
-    try {
+
+const registerUser =asyncErrorHandler( async (req, res) => {
+    
       const { name, username, password } = req.body;
       // console.log(username);
       // check validation
@@ -40,10 +42,9 @@ const registerUser = async (req, res) => {
         });
     });
       //create the user
-    } catch (err) {
-      console.log(err.message);
-    }
-  };
+  
+  }
+);
 
 
   export{registerUser};

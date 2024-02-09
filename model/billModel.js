@@ -6,39 +6,39 @@ const billSchema= new mongoose.Schema({
     user:{
         type:mongoose.Schema.Types.ObjectId,
         ref:User,
-        require:true
+        required:true
     },
     order:{
         type:mongoose.Schema.Types.ObjectId,
         ref:Order,
-        require:true
+        required:true
     },
     firstName:{
         type:String,
-        require:[true,"enter your name"]
+        required:[true,"enter your name"]
     },
     companyName:{
         type:String,
-        require:[true,"enter company name"]
+        required:[true,"enter company name"]
     },
     streetAddress:{
         type:String,
-        require:[true,"enter street"]
+        required:[true,"enter street"]
     },
     floor:{
         type:String
     },
     city:{
         type:String,
-        require:[true,"enter city"]
+        required:[true,"enter city"]
     },
     phoneNumber:{
         type:String,
-        require:[true,"enter phone number"]
+        required:[true,"enter phone number"]
     },
     email:{
         type:String,
-        require:[true,"enter gmail"]
+        required:[true,"enter gmail"]
     }
 
 })

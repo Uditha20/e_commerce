@@ -1,13 +1,9 @@
 import bill from "../model/billModel.js";
+import asyncErrorHandler from "../utils/asyncErrorHandler.js";
 
-const addBill=async(req,res)=>{
-    try{
-        const billDetails=await bill.create(req.body);
-        return res.json(billDetails)
+const addBill = asyncErrorHandler(async (req, res, next) => {
+  const billDetails = await bill.create(req.body);
+  return res.json(billDetails);
+});
 
-    }catch(err){
-        console.log(err.message)
-    }
-}
-
-export {addBill};
+export { addBill };

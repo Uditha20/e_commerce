@@ -3,15 +3,15 @@ import mongoose from "mongoose";
 const userSchema= new mongoose.Schema({
     name:{
         type:String,
-        require:[true]
+        required:[true,'name is required']
     },
     username:{
         type:String,
-        require:[true,"please enter your username"]
+        required:[true,"please enter your username"]
     },
     password:{
         type:String,
-        require:[true,"please enter password"],
+        required:[true,"please enter password"],
         minlength:8
     }
 })

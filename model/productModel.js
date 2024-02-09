@@ -3,15 +3,15 @@ import mongoose  from "mongoose";
 const products=new mongoose.Schema({
     productname:{
         type:String,
-        require:[true,"please enter product name"]
+        required:[true,"please enter product name"]
     },
     price:{
         type:Number,
-        require:[true,"please enter the price"]
+        required:[true,"please enter the price"]
     },
     item_count:{
         type:Number,
-        require:[true,"how many items are add?"]
+        required:[true,"how many items are add?"]
     },
     color:{
         type:String,
@@ -21,7 +21,7 @@ const products=new mongoose.Schema({
     },
     type:{
         type:String,
-        require:[true,"enter the product category"]
+        required:[true,"enter the product category"]
     }
 //  need to add the image field
 

@@ -1,16 +1,11 @@
 import product from "../model/productModel.js";
+import asyncErrorHandler from "../utils/asyncErrorHandler.js";
 
-const addProduct=async(req,res)=>{
-    try{
-        const productAdd=await product.create(req.body)
-        return res.json(productAdd);
-    }catch(err){
-        console.log(err.message);
-    }
-}
+const addProduct = asyncErrorHandler(async (req, res, next) => {
+  const productAdd = await product.create(req.body);
+  return res.json(productAdd);
+});
 
-const editProduct=async(req,res)=>{
-    
-}
+const editProduct = async (req, res) => {};
 
-export {addProduct};
+export { addProduct };
