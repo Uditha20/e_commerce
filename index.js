@@ -15,6 +15,7 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import cookieParser from "cookie-parser";
 
 
+
 dotenv.config();
 const app = express();
 app.use(cookieParser());
@@ -78,7 +79,7 @@ app.use("/products", productRouter);
 app.use("/bill", billRouter);
 
 app.use("/auth",authRouter);
-
+// app.use(errorHandler);
 // default error handling
 app.all("*", (req, res, next) => {
   const err = new CustomError(
