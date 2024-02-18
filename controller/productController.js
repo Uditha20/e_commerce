@@ -36,21 +36,40 @@ const deleteCategory = asyncErrorHandler(async (req, res, next) => {
   res.json({ message: "ok", categoryStatus });
 });
 
-
 // brand add
-const addBrand=asyncErrorHandler(async(req,res,next)=>{
+const addBrand = asyncErrorHandler(async (req, res, next) => {
+  const { brandName, categoryId } = req.body;
+  const brandExit = await Brand.findOne({ brandName });
+  if (brandExit && brandExit.isActive == true) {
+    const error = new CustomError("1", 404);
+    return next(error);
+  }
   const brand = await Brand.create(req.body);
+
   return res.status(201).json({ message: "ok", brand });
-})
+});
 
+// get all brands
 
+const gellAllBrand = asyncErrorHandler(async (req, res, next) => {
+  const allbrand = await Brand.find({}).populate('category','categoryName').exec()
+  res.status(200).json(allbrand);
+});
 
-
+// 
 const addProduct = asyncErrorHandler(async (req, res, next) => {
   const productAdd = await product.create(req.body);
   return res.json(productAdd);
 });
 
+const getBrandName =asyncErrorHandler(async(req,res,next)=>{
+  const categoryId = req.query.category; 
+
+  // console.log(categoryId);
+  const brands=await Brand.find({category:categoryId}).populate('category')
+  return res.status(200).json(brands);
+})
+
 const editProduct = async (req, res) => {};
 
-export { addCategory, addProduct, gellAllCategory, deleteCategory,addBrand };
+export { addCategory, addProduct, gellAllCategory, deleteCategory, addBrand,gellAllBrand,getBrandName};

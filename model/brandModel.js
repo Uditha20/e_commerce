@@ -7,7 +7,7 @@ const brand = new mongoose.Schema({
   },
   category: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "categoryModel",
+    ref: "category",
     required: true,
   },
   isActive: {
