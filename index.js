@@ -13,6 +13,8 @@ import passport from "passport";
 // import passportStrategy from "./passport.js";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import cookieParser from "cookie-parser";
+import path from "path"
+import { fileURLToPath } from 'url';
 
 
 
@@ -67,6 +69,10 @@ app.use(cors(
   }
 ))
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 // user route

@@ -1,9 +1,20 @@
 import { Router } from "express";
-import { addBrand, addCategory, addProduct, deleteCategory, gellAllBrand, gellAllCategory, getBrandName } from "../controller/productController.js";
+import {
+  addBrand,
+  addCategory,
+  addProduct,
+  deleteCategory,
+  gellAllBrand,
+  gellAllCategory,
+  getBrandName,
+  getOneProduct,
+  getProductDetailsFrom,
+} from "../controller/productController.js";
 import {
   addOrder,
   getOrderWithProductDetails,
 } from "../controller/orderController.js";
+import multer from "multer";
 
 const router = Router();
 // category controller
@@ -15,13 +26,35 @@ router.route("/brand/addBrand").post(addBrand);
 router.route("/brand/getBrand").get(gellAllBrand);
 router.route("/category/getBrandName").get(getBrandName);
 
-
-
-router.route("/addProduct").post(addProduct);
-
 // router.route("/order/addOrder/:userid/:productid").post(addOrder);
 router.route("/order/addOrder").post(addOrder);
 router.route("/order/getDetails/:id").get(getOrderWithProductDetails);
 
+// Set up storage for multer
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads");
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + "-" + Date.now() + "-" + file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
+
+// Define the route
+router.post(
+  "/addProduct",
+  upload.fields([
+    { name: "mainImage", maxCount: 1 },
+    { name: "additionalImages", maxCount: 3 },
+  ]),
+  addProduct
+);
+
+// router.route("/addProduct").post(addProduct);
+
+router.route("/getAllDetails").get(getProductDetailsFrom);
+router.route("/getOneProduct/:id").get(getOneProduct);
 
 export default router;

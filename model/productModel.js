@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const products = new mongoose.Schema({
-  productname: {
+  productName: {
     type: String,
     required: [true, "please enter product name"],
   },
@@ -30,6 +30,12 @@ const products = new mongoose.Schema({
     ref:"brand",
     required: true,
   },
+  mainImage: {
+    type: String, // URL or path to the main image
+  },
+  additionalImages: [{
+    type: String, // Array of URLs or paths to additional images
+  }],
   //  need to add the image field
 });
 
