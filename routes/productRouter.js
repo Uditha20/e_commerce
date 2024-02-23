@@ -53,7 +53,7 @@ router.post(
 
 // router.route("/addProduct").post(addProduct);
 
-router.route("/getAllDetails").get(protect,getProductDetailsFrom);
+router.route("/getAllDetails").get(getProductDetailsFrom);
 router.route("/getOneProduct/:id").get(protect,getOneProduct);
 router.route("/productDelete/:id").post(protect,deleteProduct);
 

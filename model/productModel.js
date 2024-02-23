@@ -40,6 +40,10 @@ const products = new mongoose.Schema({
   additionalImages: [{
     type: String, // Array of URLs or paths to additional images
   }],
+  sellType:{
+    type:String,
+    default:'flash'
+  }
   //  need to add the image field
 });
 
