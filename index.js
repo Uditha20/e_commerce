@@ -26,44 +26,44 @@ const port = 5000;
 app.use(json());
 app. use(express.urlencoded({extended:false}))
 
-app.use(
-	cookieSession({
-		name: "session",
-		keys: ["cyberwolve"],
-		maxAge: 24 * 60 * 60 * 100,
-	})
-);
+// app.use(
+// 	cookieSession({
+// 		name: "session",
+// 		keys: ["cyberwolve"],
+// 		maxAge: 24 * 60 * 60 * 100,
+// 	})
+// );
 
 
-passport.use(
-	new GoogleStrategy(
-		{
-			clientID: process.env.CLIENT_ID,
-			clientSecret: process.env.CLIENT_SECRET,
-			callbackURL: "/auth/google/callback",
-			scope: ["profile", "email"],
-		},
-		function (accessToken, refreshToken, profile, callback) {
-			callback(null, profile);
-		}
-	)
-);
+// passport.use(
+// 	new GoogleStrategy(
+// 		{
+// 			clientID: process.env.CLIENT_ID,
+// 			clientSecret: process.env.CLIENT_SECRET,
+// 			callbackURL: "/auth/google/callback",
+// 			scope: ["profile", "email"],
+// 		},
+// 		function (accessToken, refreshToken, profile, callback) {
+// 			callback(null, profile);
+// 		}
+// 	)
+// );
 
-passport.serializeUser((user, done) => {
-	done(null, user);
-});
+// passport.serializeUser((user, done) => {
+// 	done(null, user);
+// });
 
-passport.deserializeUser((user, done) => {
-	done(null, user);
-});
+// passport.deserializeUser((user, done) => {
+// 	done(null, user);
+// });
 
 
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.initialize());
+// app.use(passport.session());
 
 app.use(cors(
   {
-    origin:"http://localhost:3000",
+    origin:["http://localhost:3000",'http://localhost:3001'],
     credentials:true
 
   }

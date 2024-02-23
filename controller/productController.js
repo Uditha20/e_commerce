@@ -1,64 +1,10 @@
 import asyncErrorHandler from "../utils/asyncErrorHandler.js";
 import { CustomError } from "../utils/customerError.js";
 import product from "../model/productModel.js";
-import category from "../model/categoryModel.js";
 import Brand from "../model/brandModel.js";
+import category from "../model/categoryModel.js";
 
-//category add controller
-const addCategory = asyncErrorHandler(async (req, res, next) => {
-  const { categoryName } = req.body;
-  const categoryExists = await category.findOne({ categoryName });
-  // console.log(exits.isActive);
-  if (categoryExists && categoryExists.isActive == true) {
-    const error = new CustomError("1", 404);
-    return next(error);
-  }
-  const categoryAdd = await category.create(req.body);
 
-  return res.status(201).json({ message: "ok", categoryAdd });
-});
-
-//category get controller
-const gellAllCategory = asyncErrorHandler(async (req, res, next) => {
-  const allCategory = await category.find({});
-  res.status(200).json(allCategory);
-});
-
-// category delete
-const deleteCategory = asyncErrorHandler(async (req, res, next) => {
-  const categoryStatus = await category.findByIdAndUpdate(
-    req.params.id,
-    {
-      isActive: false,
-    },
-    { new: true }
-  );
-  res.json({ message: "ok", categoryStatus });
-});
-
-// brand add
-const addBrand = asyncErrorHandler(async (req, res, next) => {
-  const { brandName, categoryId } = req.body;
-  const brandExit = await Brand.findOne({ brandName });
-  if (brandExit && brandExit.isActive == true) {
-    const error = new CustomError("1", 404);
-    return next(error);
-  }
-  const brand = await Brand.create(req.body);
-
-  return res.status(201).json({ message: "ok", brand });
-});
-
-// get all brands
-
-const gellAllBrand = asyncErrorHandler(async (req, res, next) => {
-  const allbrand = await Brand.find({})
-    .populate("category", "categoryName")
-    .exec();
-  res.status(200).json(allbrand);
-});
-
-//
 const addProduct = asyncErrorHandler(async (req, res, next) => {
   const { productName, price, item_count, color, size, categoryId, brandId } =
     req.body;
@@ -116,16 +62,24 @@ const getOneProduct = asyncErrorHandler(async (req, res) => {
   return res.status(200).json(productOne);
 });
 
+
+const deleteProduct = asyncErrorHandler(async (req, res, next) => {
+  const productStatus = await product.findByIdAndUpdate(
+    req.params.id,
+    {
+      isActive: false,
+    },
+    { new: true }
+  );
+  res.json({ message: "ok", productStatus });
+});
+
 const editProduct = async (req, res) => {};
 
 export {
-  addCategory,
   addProduct,
-  gellAllCategory,
-  deleteCategory,
-  addBrand,
-  gellAllBrand,
   getBrandName,
   getProductDetailsFrom,
-  getOneProduct
+  getOneProduct,
+  deleteProduct
 };

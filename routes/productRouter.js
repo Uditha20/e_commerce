@@ -1,11 +1,7 @@
 import { Router } from "express";
 import {
-  addBrand,
-  addCategory,
   addProduct,
-  deleteCategory,
-  gellAllBrand,
-  gellAllCategory,
+  deleteProduct,
   getBrandName,
   getOneProduct,
   getProductDetailsFrom,
@@ -15,6 +11,9 @@ import {
   getOrderWithProductDetails,
 } from "../controller/orderController.js";
 import multer from "multer";
+import { addCategory,gellAllCategory,deleteCategory} from "../controller/categoryController.js";
+import { addBrand,gellAllBrand } from "../controller/brandController.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = Router();
 // category controller
@@ -54,7 +53,8 @@ router.post(
 
 // router.route("/addProduct").post(addProduct);
 
-router.route("/getAllDetails").get(getProductDetailsFrom);
-router.route("/getOneProduct/:id").get(getOneProduct);
+router.route("/getAllDetails").get(protect,getProductDetailsFrom);
+router.route("/getOneProduct/:id").get(protect,getOneProduct);
+router.route("/productDelete/:id").post(protect,deleteProduct);
 
 export default router;

@@ -12,7 +12,17 @@ const userSchema= new mongoose.Schema({
     password:{
         type:String,
         required:[true,"please enter password"],
-        minlength:8
+        minlength:8,
+        // select:false
+    },
+    isActive: {
+        type: Boolean,
+        default: true,
+        // select:false
+      },
+    role:{
+        type:String,
+        default:'user'
     }
 })
 
