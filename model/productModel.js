@@ -42,7 +42,7 @@ const products = new mongoose.Schema({
   }],
   sellType:{
     type:String,
-    default:'flash'
+    default:'best'
   }
   //  need to add the image field
 });
