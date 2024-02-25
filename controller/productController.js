@@ -52,7 +52,7 @@ const getProductDetailsFrom = asyncErrorHandler(async (req, res, next) => {
   res.status(200).json(allDetailsDetails);
 });
 
-const getOneProduct = asyncErrorHandler(async (req, res) => {
+const getOneProduct = asyncErrorHandler(async (req, res,next) => {
   const productId = req.params.id;
   const productOne = await product.findById(productId);
   if (!product) {
@@ -61,6 +61,19 @@ const getOneProduct = asyncErrorHandler(async (req, res) => {
   }
   return res.status(200).json(productOne);
 });
+
+const oneProductDetails=asyncErrorHandler(async(req,res,next)=>{
+  const productId=req.params.id;
+  const details = await product
+    .findById(productId)
+    .populate({
+      path: "brandId",
+      select: "brandName category",
+      populate: { path: "category", select: "categoryName" },
+    })
+    .exec();
+  res.status(200).json(details);
+})
 
 
 const deleteProduct = asyncErrorHandler(async (req, res, next) => {
@@ -81,5 +94,6 @@ export {
   getBrandName,
   getProductDetailsFrom,
   getOneProduct,
-  deleteProduct
+  deleteProduct,
+  oneProductDetails
 };

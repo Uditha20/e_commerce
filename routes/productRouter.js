@@ -5,6 +5,7 @@ import {
   getBrandName,
   getOneProduct,
   getProductDetailsFrom,
+  oneProductDetails,
 } from "../controller/productController.js";
 import {
   addOrder,
@@ -56,5 +57,6 @@ router.post(
 router.route("/getAllDetails").get(getProductDetailsFrom);
 router.route("/getOneProduct/:id").get(protect,getOneProduct);
 router.route("/productDelete/:id").post(protect,deleteProduct);
+router.route("/oneProductDetails/:id").get(oneProductDetails);
 
 export default router;
