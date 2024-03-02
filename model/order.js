@@ -6,14 +6,14 @@ const orderSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: User,
+      ref: "user",
       required: true,
     },
     items: [
       {
         product: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: Product,
+          ref: "product",
           required: true,
         },
         quantity: {
@@ -21,12 +21,42 @@ const orderSchema = new mongoose.Schema(
           required: [true,"enter the quantity"],
           min: 1,
         },
+        subtotal:{
+          type:String,
+        }
       },
     ],
-    totalPrice: {
+   
+    billDetails:[
+        {
+          name:{
+            type:String,
+            required:[true,"name"]
+          },
+          address:{
+            type:String,
+            required:[true,"enter your address"]
+          },
+          town:{
+            type:String,
+            required:[true,"enter the town"]
+          },
+          phoneNo:{
+            type:Number,
+            required:[true,"enter the phone number"]
+          },
+          email:{
+            type:String,
+            required:[true,"enter the email"]
+          }
+        }
+
+    ],
+    total: {
       type: Number,
       required: true,
     },
+    
     // Add other fields as necessary (e.g., order status, timestamps, etc.)
   },
   { timestamps: true }

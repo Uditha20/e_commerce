@@ -7,10 +7,7 @@ import {
   getProductDetailsFrom,
   oneProductDetails,
 } from "../controller/productController.js";
-import {
-  addOrder,
-  getOrderWithProductDetails,
-} from "../controller/orderController.js";
+
 import multer from "multer";
 import { addCategory,gellAllCategory,deleteCategory} from "../controller/categoryController.js";
 import { addBrand,gellAllBrand } from "../controller/brandController.js";
@@ -27,8 +24,7 @@ router.route("/brand/getBrand").get(gellAllBrand);
 router.route("/category/getBrandName").get(getBrandName);
 
 // router.route("/order/addOrder/:userid/:productid").post(addOrder);
-router.route("/order/addOrder").post(addOrder);
-router.route("/order/getDetails/:id").get(getOrderWithProductDetails);
+
 
 // Set up storage for multer
 const storage = multer.diskStorage({

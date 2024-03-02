@@ -5,6 +5,7 @@ import userRouter from "./routes/userRouter.js";
 import productRouter from "./routes/productRouter.js";
 import billRouter from "./routes/billRouter.js";
 import authRouter from "./routes/auth.js"
+import orderRouter from "./routes/orderRoute.js"
 import { CustomError } from "./utils/customerError.js";
 import globalErrorHandler from "./controller/errorController.js";
 import cors from "cors";
@@ -85,6 +86,8 @@ app.use("/products", productRouter);
 app.use("/bill", billRouter);
 
 app.use("/auth",authRouter);
+
+app.use("/order",orderRouter)
 // app.use(errorHandler);
 // default error handling
 app.all("*", (req, res, next) => {
