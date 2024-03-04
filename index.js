@@ -4,8 +4,9 @@ import dotenv from "dotenv";
 import userRouter from "./routes/userRouter.js";
 import productRouter from "./routes/productRouter.js";
 import billRouter from "./routes/billRouter.js";
-import authRouter from "./routes/auth.js"
-import orderRouter from "./routes/orderRoute.js"
+import authRouter from "./routes/auth.js";
+import orderRouter from "./routes/orderRoute.js";
+import countRouter from "./routes/countDetailsRouter.js";
 import { CustomError } from "./utils/customerError.js";
 import globalErrorHandler from "./controller/errorController.js";
 import cors from "cors";
@@ -14,10 +15,8 @@ import passport from "passport";
 // import passportStrategy from "./passport.js";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import cookieParser from "cookie-parser";
-import path from "path"
-import { fileURLToPath } from 'url';
-
-
+import path from "path";
+import { fileURLToPath } from "url";
 
 dotenv.config();
 const app = express();
@@ -25,7 +24,7 @@ app.use(cookieParser());
 
 const port = 5000;
 app.use(json());
-app. use(express.urlencoded({extended:false}))
+app.use(express.urlencoded({ extended: false }));
 
 // app.use(
 // 	cookieSession({
@@ -34,7 +33,6 @@ app. use(express.urlencoded({extended:false}))
 // 		maxAge: 24 * 60 * 60 * 100,
 // 	})
 // );
-
 
 // passport.use(
 // 	new GoogleStrategy(
@@ -58,23 +56,20 @@ app. use(express.urlencoded({extended:false}))
 // 	done(null, user);
 // });
 
-
 // app.use(passport.initialize());
 // app.use(passport.session());
 
-app.use(cors(
-  {
-    origin:["http://localhost:3000",'http://localhost:3001'],
-    credentials:true
-
-  }
-))
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "http://localhost:3001"],
+    credentials: true,
+  })
+);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // user route
 app.use("/user", userRouter);
@@ -85,9 +80,11 @@ app.use("/products", productRouter);
 // order bill
 app.use("/bill", billRouter);
 
-app.use("/auth",authRouter);
+app.use("/auth", authRouter);
 
-app.use("/order",orderRouter)
+app.use("/order", orderRouter);
+
+app.use("/dashboard", countRouter);
 // app.use(errorHandler);
 // default error handling
 app.all("*", (req, res, next) => {
