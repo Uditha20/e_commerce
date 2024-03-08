@@ -2,7 +2,6 @@ import category from "../model/categoryModel.js";
 import asyncErrorHandler from "../utils/asyncErrorHandler.js";
 import { CustomError } from "../utils/customerError.js";
 
-
 const addCategory = asyncErrorHandler(async (req, res, next) => {
   const { categoryName } = req.body;
   const categoryExists = await category.findOne({ categoryName });
@@ -32,4 +31,15 @@ const deleteCategory = asyncErrorHandler(async (req, res, next) => {
   res.json({ message: "ok", categoryStatus });
 });
 
-export { addCategory, gellAllCategory,deleteCategory };
+const editCategory = asyncErrorHandler(async (req, res, next) => {
+  const categoryId = req.params.id;
+  const newValues = req.body;
+  const updatedCategory = await category.findByIdAndUpdate(
+    categoryId,
+    newValues,
+    { new: true }
+  );
+  res.json(updatedCategory);
+});
+
+export { addCategory, gellAllCategory, deleteCategory,editCategory };

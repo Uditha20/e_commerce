@@ -3,7 +3,6 @@ import asyncErrorHandler from "../utils/asyncErrorHandler.js";
 import { CustomError } from "../utils/customerError.js";
 import category from "../model/categoryModel.js";
 
-
 const addBrand = asyncErrorHandler(async (req, res, next) => {
   const { brandName, categoryId } = req.body;
   const brandExit = await Brand.findOne({ brandName });
@@ -23,4 +22,26 @@ const gellAllBrand = asyncErrorHandler(async (req, res, next) => {
   res.status(200).json(allbrand);
 });
 
-export { addBrand,gellAllBrand };
+const deleteBrand = asyncErrorHandler(async (req, res, next) => {
+  const brandStatus = await Brand.findByIdAndUpdate(
+    req.params.id,
+    {
+      isActive: false,
+    },
+    { new: true }
+  );
+  res.json({ message: "ok", brandStatus });
+});
+
+const editBrand=asyncErrorHandler(async(req,res,next)=>{
+  const brandId = req.params.id;
+  const {brandName,category} = req.body;
+
+  const updatedBrand = await Brand.findByIdAndUpdate(
+    brandId,
+    {brandName,category},
+    { new: true }
+  );
+  res.json(updatedBrand);
+})
+export { addBrand, gellAllBrand, deleteBrand,editBrand};

@@ -4,10 +4,10 @@ import product from "../model/productModel.js";
 import Brand from "../model/brandModel.js";
 import category from "../model/categoryModel.js";
 
-
 const addProduct = asyncErrorHandler(async (req, res, next) => {
   const { productName, price, item_count, color, size, categoryId, brandId } =
     req.body;
+
   const mainImage = req.files["mainImage"]
     ? req.files["mainImage"][0].path
     : null;
@@ -52,7 +52,7 @@ const getProductDetailsFrom = asyncErrorHandler(async (req, res, next) => {
   res.status(200).json(allDetailsDetails);
 });
 
-const getOneProduct = asyncErrorHandler(async (req, res,next) => {
+const getOneProduct = asyncErrorHandler(async (req, res, next) => {
   const productId = req.params.id;
   const productOne = await product.findById(productId);
   if (!product) {
@@ -62,8 +62,8 @@ const getOneProduct = asyncErrorHandler(async (req, res,next) => {
   return res.status(200).json(productOne);
 });
 
-const oneProductDetails=asyncErrorHandler(async(req,res,next)=>{
-  const productId=req.params.id;
+const oneProductDetails = asyncErrorHandler(async (req, res, next) => {
+  const productId = req.params.id;
   const details = await product
     .findById(productId)
     .populate({
@@ -73,8 +73,7 @@ const oneProductDetails=asyncErrorHandler(async(req,res,next)=>{
     })
     .exec();
   res.status(200).json(details);
-})
-
+});
 
 const deleteProduct = asyncErrorHandler(async (req, res, next) => {
   const productStatus = await product.findByIdAndUpdate(
@@ -87,7 +86,44 @@ const deleteProduct = asyncErrorHandler(async (req, res, next) => {
   res.json({ message: "ok", productStatus });
 });
 
-const editProduct = async (req, res) => {};
+const editProduct = asyncErrorHandler(async (req, res, next) => {
+  const productId = req.params.id;
+  let updateData = {};
+
+  // Only add fields to updateData that are provided in the request
+  const fieldsToUpdate = [
+    "productName",
+    "price",
+    "item_count",
+    "color",
+    "size",
+    "categoryId",
+    "brandId",
+  ];
+  fieldsToUpdate.forEach((field) => {
+    if (req.body[field] !== undefined) {
+      updateData[field] = req.body[field];
+    }
+  });
+
+  if (req.files) {
+    if (req.files["mainImage"]) {
+      updateData.mainImage = req.files["mainImage"][0].path;
+    }
+    if (req.files["additionalImages"]) {
+      updateData.additionalImages = req.files["additionalImages"].map(
+        (file) => file.path
+      );
+    }
+  }
+
+  const updatedProduct = await product.findOneAndUpdate(
+    { _id: productId }, // Corrected filter object
+    updateData, // Removed curly braces around updateData
+    { new: true }
+  );
+  res.json({ message: "fff", updatedProduct });
+});
 
 export {
   addProduct,
@@ -95,5 +131,6 @@ export {
   getProductDetailsFrom,
   getOneProduct,
   deleteProduct,
-  oneProductDetails
+  oneProductDetails,
+  editProduct,
 };
