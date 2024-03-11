@@ -3,10 +3,11 @@ import bcrypt from "bcryptjs";
 import asyncErrorHandler from "../utils/asyncErrorHandler.js";
 import jwt from "jsonwebtoken";
 import { CustomError } from "../utils/customerError.js";
+import sendEmail from "../utils/sendEmail.js";
 
 const singToken = (id, name) => {
-  return jwt.sign({id,name}, process.env.JWT_SECRET, {
-    expiresIn:"1hr"
+  return jwt.sign({ id, name }, process.env.JWT_SECRET, {
+    expiresIn: "1hr",
   });
 };
 
@@ -43,11 +44,37 @@ const registerUser = asyncErrorHandler(async (req, res, next) => {
         username,
         password: hash,
       });
-      res.status(201).json({ message: "ok", userCreate });
+
+      const token = jwt.sign(
+        { userId: userCreate._id },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+      const url = `${process.env.BASE_URL}user/${userCreate._id}/verify/${token}`;
+      await sendEmail(userCreate.username, "Verify Email", url);
+      res
+        .status(201)
+        .send({ message: "ok" });
     });
   });
   //create the user
 });
+
+
+const verifyGmail = asyncErrorHandler(async (req, res, next) => {
+  try {
+    const token = req.params.token;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Update user's verified status
+    await user.findByIdAndUpdate(decoded.userId, { verified: true });
+
+    res.send("Email successfully verified.");
+  } catch (error) {
+    res.status(400).send("Invalid or expired token.");
+  }
+});
+
 
 const loginUser = asyncErrorHandler(async (req, res, next) => {
   const { username, password } = req.body;
@@ -64,13 +91,13 @@ const loginUser = asyncErrorHandler(async (req, res, next) => {
     }
     if (result) {
       const newUser = await user.findOne({ username }).select("-password");
-      const token = singToken(userFind._id,userFind.username);
+      const token = singToken(userFind._id, userFind.username);
       res.cookie("token", token, {
         httpOnly: true,
         // domain: 'localhost',
-        path: '/',
+        path: "/",
         expires: new Date(Date.now() + 1000 * 86400),
-        sameSite: 'lax'
+        sameSite: "lax",
       }),
         res.status(200).json({ token, newUser });
     } else {
@@ -80,14 +107,12 @@ const loginUser = asyncErrorHandler(async (req, res, next) => {
   });
 });
 
-
-
-const getUser =asyncErrorHandler( async (req, res, next) => {
+const getUser = asyncErrorHandler(async (req, res, next) => {
   const userId = req.user;
   let newuser;
 
   try {
-    newuser = await user.findById(userId,"-password");
+    newuser = await user.findById(userId, "-password");
   } catch (err) {
     const error = new CustomError("Login again..", 500);
     return next(error);
@@ -98,12 +123,10 @@ const getUser =asyncErrorHandler( async (req, res, next) => {
   return res.status(200).json({ newuser });
 });
 
-
 const getAllDetailsUser = asyncErrorHandler(async (req, res, next) => {
   const userDetails = await user.find({});
   res.status(200).json(userDetails);
 });
-
 
 const logOutUser = asyncErrorHandler(async (req, res, next) => {
   res.cookie("token", "", {
@@ -112,4 +135,4 @@ const logOutUser = asyncErrorHandler(async (req, res, next) => {
   }),
     res.status(200).json({ message: "log out" });
 });
-export {getUser, registerUser, loginUser, getAllDetailsUser, logOutUser };
+export { getUser, registerUser, loginUser, getAllDetailsUser, logOutUser,verifyGmail };
