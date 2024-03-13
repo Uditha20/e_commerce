@@ -5,6 +5,8 @@ import jwt from "jsonwebtoken";
 import { CustomError } from "../utils/customerError.js";
 import sendEmail from "../utils/sendEmail.js";
 
+
+
 const singToken = (id, name) => {
   return jwt.sign({ id, name }, process.env.JWT_SECRET, {
     expiresIn: "1hr",
@@ -12,7 +14,7 @@ const singToken = (id, name) => {
 };
 
 const registerUser = asyncErrorHandler(async (req, res, next) => {
-  const { name, username, password } = req.body;
+  const { name, username,phoneNo, password} = req.body;
   // console.log(username);
   // check validation
   if (!name) {
@@ -42,6 +44,7 @@ const registerUser = asyncErrorHandler(async (req, res, next) => {
       const userCreate = await user.create({
         name,
         username,
+        phoneNo,
         password: hash,
       });
 
@@ -81,6 +84,15 @@ const loginUser = asyncErrorHandler(async (req, res, next) => {
   const userFind = await user.findOne({ username });
   if (!userFind) {
     const error = new CustomError("Invalid Credentials", 404);
+    return next(error);
+  }
+  if(userFind && !userFind.verified){
+    const error = new CustomError("verifiy your email", 404);
+    return next(error);
+  }
+
+  if(userFind && !userFind.isActive){
+    const error = new CustomError("Not Allowed to access", 404);
     return next(error);
   }
 
