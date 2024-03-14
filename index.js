@@ -61,7 +61,7 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(
   cors({
-    origin: ["https://houseofcambridge.co.uk", "http://localhost:3001"],
+    origin: [process.env.BASE_URL],
     credentials: true,
   })
 );
