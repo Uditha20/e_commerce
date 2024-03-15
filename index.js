@@ -61,7 +61,7 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(
   cors({
-    origin: [process.env.BASE_URL],
+    origin: [process.env.BASE_URL,process.env.BASE_URL_TWO],
     credentials: true,
   })
 );
