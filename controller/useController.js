@@ -53,7 +53,7 @@ const registerUser = asyncErrorHandler(async (req, res, next) => {
         process.env.JWT_SECRET,
         { expiresIn: "1h" }
       );
-      const url = `${process.env.BASE_URL}user/${userCreate._id}/verify/${token}`;
+      const url = `${process.env.BASE_URL}/user/${userCreate._id}/verify/${token}`;
       await sendEmail(userCreate.username, "Verify Email", url);
       res
         .status(201)
