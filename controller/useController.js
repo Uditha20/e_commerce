@@ -48,13 +48,13 @@ const registerUser = asyncErrorHandler(async (req, res, next) => {
         password: hash,
       });
 
-      const token = jwt.sign(
-        { userId: userCreate._id },
-        process.env.JWT_SECRET,
-        { expiresIn: "1h" }
-      );
-      const url = `${process.env.BASE_URL}/user/${userCreate._id}/verify/${token}`;
-      await sendEmail(userCreate.username, "Verify Email", url);
+      // const token = jwt.sign(
+      //   { userId: userCreate._id },
+      //   process.env.JWT_SECRET,
+      //   { expiresIn: "1h" }
+      // );
+      // const url = `${process.env.BASE_URL}/user/${userCreate._id}/verify/${token}`;
+      // await sendEmail(userCreate.username, "Verify Email", url);
       res
         .status(201)
         .send({ message: "ok" });
