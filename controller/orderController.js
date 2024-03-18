@@ -12,31 +12,31 @@ const addOrder = asyncErrorHandler(async (req, res, next) => {
     return res.status(400).json({ message: "Billing details are missing." });
   }
 
-  // Create email content
-  let emailContent = `Dear ${recipient.name},\n\nYour order has been placed successfully.\n\nOrder Details:\n`;
-  items.forEach((item) => {
-    emailContent += `Product: ${item.productName}, Quantity: ${item.quantity}, Subtotal: ${item.subtotal}\n`;
-  });
-  emailContent += `\nTotal: ${total}\n\nThank you for your order.`;
-  // Set up Nodemailer transporter
-  const transporter = createTransport({
-    host: process.env.HOST,
-    service: process.env.SERVICE,
-    port: Number(process.env.EMAIL_PORT),
-    secure: Boolean(process.env.SECURE),
-    auth: {
-      user: process.env.USER,
-      pass: process.env.PASS,
-    },
-  });
+  // // Create email content
+  // let emailContent = `Dear ${recipient.name},\n\nYour order has been placed successfully.\n\nOrder Details:\n`;
+  // items.forEach((item) => {
+  //   emailContent += `Product: ${item.productName}, Quantity: ${item.quantity}, Subtotal: ${item.subtotal}\n`;
+  // });
+  // emailContent += `\nTotal: ${total}\n\nThank you for your order.`;
+  // // Set up Nodemailer transporter
+  // const transporter = createTransport({
+  //   host: process.env.HOST,
+  //   service: process.env.SERVICE,
+  //   port: Number(process.env.EMAIL_PORT),
+  //   secure: Boolean(process.env.SECURE),
+  //   auth: {
+  //     user: process.env.USER,
+  //     pass: process.env.PASS,
+  //   },
+  // });
 
-  // Sending the email
-  await transporter.sendMail({
-    from: "udithaindunil5@gmail.com",
-    to: recipient.email,
-    subject: "Order Confirmation",
-    text: emailContent,
-  });
+  // // Sending the email
+  // await transporter.sendMail({
+  //   from: "udithaindunil5@gmail.com",
+  //   to: recipient.email,
+  //   subject: "Order Confirmation",
+  //   text: emailContent,
+  // });
   return res.status(201).json({ message: "ok" });
 });
 
