@@ -4,7 +4,6 @@ export default async (email, subject, text) => {
 	try {
 		const transporter = createTransport({
 			host: process.env.HOST,
-			service: process.env.SERVICE,
 			port: Number(process.env.EMAIL_PORT),
 			secure: Boolean(process.env.SECURE),
 			auth: {
