@@ -1,17 +1,45 @@
 import order from "../model/order.js";
 import asyncErrorHandler from "../utils/asyncErrorHandler.js";
 import { createTransport } from "nodemailer";
+import Stripe from "stripe";
+
+const paymentSession = asyncErrorHandler(async (req, res, next) => {
+  const stripe = Stripe(process.env.STRIPE_SECRET);
+  const { total } = req.body;
+  const totalAmountInCents = parseInt(parseFloat(total) * 100);
+  const lineItems = [
+    {
+      price_data: {
+        currency: "usd",
+        product_data: {
+          name: "Total Order Amount",
+        },
+        unit_amount: totalAmountInCents,
+      },
+      quantity: 1,
+    },
+  ];
+
+  const session = await await stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    line_items: lineItems,
+    mode: "payment",
+    success_url:`${process.env.BASE_URL}/success`,
+    cancel_url: `${process.env.BASE_URL}/Login`,
+  });
+
+  res.json({ id: session.id });
+});
+
 const addOrder = asyncErrorHandler(async (req, res, next) => {
-  const { user, items, total, billDetails } = req.body;
-  const addOrder = await order.create({ user, items, total, billDetails });
-  // return res.status(201).json({ message: "ok" });
-
-  // Assuming billDetails contains recipient's information
-  const recipient = billDetails.length > 0 ? billDetails[0] : null;
-  if (!recipient) {
-    return res.status(400).json({ message: "Billing details are missing." });
-  }
-
+   const { user, items, total, billDetails } = req.body;
+    const addOrder = await order.create({ user, items, total, billDetails });
+   return res.status(201).json({ message: "ok" });
+  // // Assuming billDetails contains recipient's information
+  // const recipient = billDetails.length > 0 ? billDetails[0] : null;
+  // if (!recipient) {
+  //   return res.status(400).json({ message: "Billing details are missing." });
+  // }
   // // Create email content
   // let emailContent = `Dear ${recipient.name},\n\nYour order has been placed successfully.\n\nOrder Details:\n`;
   // items.forEach((item) => {
@@ -29,7 +57,6 @@ const addOrder = asyncErrorHandler(async (req, res, next) => {
   //     pass: process.env.PASS,
   //   },
   // });
-
   // // Sending the email
   // await transporter.sendMail({
   //   from: "udithaindunil5@gmail.com",
@@ -37,7 +64,7 @@ const addOrder = asyncErrorHandler(async (req, res, next) => {
   //   subject: "Order Confirmation",
   //   text: emailContent,
   // });
-  return res.status(201).json({ message: "ok" });
+  // return res.status(201).json({ message: "ok" });
 });
 
 const editOrder = async (req, res) => {};
@@ -82,4 +109,4 @@ const getOrdersByUser = asyncErrorHandler(async (req, res, next) => {
   res.json(userOrders);
 });
 
-export { addOrder, getOrderWithProductDetails, getOneDetails, getOrdersByUser };
+export { addOrder, getOrderWithProductDetails, getOneDetails, getOrdersByUser,paymentSession };
