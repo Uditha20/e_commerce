@@ -7,6 +7,7 @@ import billRouter from "./routes/billRouter.js";
 import authRouter from "./routes/auth.js";
 import orderRouter from "./routes/orderRoute.js";
 import countRouter from "./routes/countDetailsRouter.js";
+import feedbackRouter from "./routes/feedbackRouter.js";
 import { CustomError } from "./utils/customerError.js";
 import globalErrorHandler from "./controller/errorController.js";
 import cors from "cors";
@@ -83,6 +84,8 @@ app.use("/bill", billRouter);
 app.use("/auth", authRouter);
 
 app.use("/order", orderRouter);
+app.use("/feedback",feedbackRouter);
+
 
 app.use("/dashboard", countRouter);
 // app.use(errorHandler);
