@@ -5,7 +5,7 @@ import Brand from "../model/brandModel.js";
 import category from "../model/categoryModel.js";
 
 const addProduct = asyncErrorHandler(async (req, res, next) => {
-  const { productName, price, item_count, color, size, categoryId, brandId } =
+  const { productName, price, item_count,description, weight,color, size, categoryId, brandId } =
     req.body;
 
   const mainImage = req.files["mainImage"]
@@ -20,6 +20,8 @@ const addProduct = asyncErrorHandler(async (req, res, next) => {
     item_count,
     color,
     size,
+    description,
+    weight,
     categoryId,
     brandId,
     mainImage, // Adding the main image URL
