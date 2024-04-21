@@ -14,7 +14,7 @@ const singToken = (id, name) => {
 };
 
 const registerUser = asyncErrorHandler(async (req, res, next) => {
-  const { name, username,phoneNo, password} = req.body;
+  const { name, username,phoneNo, password,role} = req.body;
   // console.log(username);
   // check validation
   if (!name) {
@@ -46,6 +46,7 @@ const registerUser = asyncErrorHandler(async (req, res, next) => {
         username,
         phoneNo,
         password: hash,
+        role
       });
 
       const token = jwt.sign(
