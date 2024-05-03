@@ -50,7 +50,7 @@ const products = new mongoose.Schema({
   }],
   sellType:{
     type:String,
-    default:'best'
+    default:'ex'
   }
   //  need to add the image field
 });
