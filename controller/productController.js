@@ -49,7 +49,7 @@ const getProductDetailsFrom = asyncErrorHandler(async (req, res, next) => {
       path: "brandId",
       select: "brandName category",
       populate: { path: "category", select: "categoryName" },
-    })
+    }).populate('categoryId')
     .exec();
   res.status(200).json(allDetailsDetails);
 });
