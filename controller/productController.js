@@ -101,6 +101,7 @@ const editProduct = asyncErrorHandler(async (req, res, next) => {
     "size",
     "categoryId",
     "brandId",
+    "weight"
   ];
   fieldsToUpdate.forEach((field) => {
     if (req.body[field] !== undefined) {
