@@ -5,14 +5,18 @@ import {
   getOneDetails,
   getOrderWithProductDetails,
   getOrdersByUser,
-  paymentSession,
+  payhereNotify,
+  updateStatus,
+ 
 } from "../controller/orderController.js";
 const router = Router();
 
 router.route("/addOrder").post(addOrder);
-router.route("/payment").post(paymentSession);
 router.route("/getDetails").get(getOrderWithProductDetails);
 router.route("/getOneDetails/:id").get(getOneDetails);
 router.route('/user/:userId/orders').get(getOrdersByUser);
+router.route("/payment-notify").post(payhereNotify);
+router.route("/updateOrder/:id").patch(updateStatus);
+
 
 export default router;

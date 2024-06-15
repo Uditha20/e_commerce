@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 
-const orderSchema = new mongoose.Schema(
+const payemtSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -55,11 +55,15 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    status:{
+      type:Number,
+      default:1
+    }
     
     // Add other fields as necessary (e.g., order status, timestamps, etc.)
   },
   { timestamps: true }
 );
 
-const Order = mongoose.model("order", orderSchema);
-export default Order;
+const Payment = mongoose.model("payment", payemtSchema);
+export default Payment;
