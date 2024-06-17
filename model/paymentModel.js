@@ -47,6 +47,10 @@ const payemtSchema = new mongoose.Schema(
           email:{
             type:String,
             required:[true,"enter the email"]
+          },
+          deliveryOption:{
+            type:String,
+            required:[true,"enter delivery option"]
           }
         }
 
