@@ -5,8 +5,6 @@ import jwt from "jsonwebtoken";
 import { CustomError } from "../utils/customerError.js";
 import sendEmail from "../utils/sendEmail.js";
 
-
-
 const singToken = (id, name) => {
   return jwt.sign({ id, name }, process.env.JWT_SECRET, {
     expiresIn: "1hr",
@@ -14,7 +12,7 @@ const singToken = (id, name) => {
 };
 
 const registerUser = asyncErrorHandler(async (req, res, next) => {
-  const { name, username,phoneNo, password,role} = req.body;
+  const { name, username, phoneNo, password, role } = req.body;
   // console.log(username);
   // check validation
   if (!name) {
@@ -46,24 +44,14 @@ const registerUser = asyncErrorHandler(async (req, res, next) => {
         username,
         phoneNo,
         password: hash,
-        role
+        role,
       });
 
-      const token = jwt.sign(
-        { userId: userCreate._id },
-        process.env.JWT_SECRET,
-        { expiresIn: "1h" }
-      );
-      const url = `${process.env.BASE_URL}/user/${userCreate._id}/verify/${token}`;
-      await sendEmail(userCreate.username, "Verify Email", url);
-      res
-        .status(201)
-        .send({ message: "ok" });
+      res.status(201).send({ message: "ok" });
     });
   });
   //create the user
 });
-
 
 const verifyGmail = asyncErrorHandler(async (req, res, next) => {
   try {
@@ -79,7 +67,6 @@ const verifyGmail = asyncErrorHandler(async (req, res, next) => {
   }
 });
 
-
 const loginUser = asyncErrorHandler(async (req, res, next) => {
   const { username, password } = req.body;
   const userFind = await user.findOne({ username });
@@ -87,12 +74,12 @@ const loginUser = asyncErrorHandler(async (req, res, next) => {
     const error = new CustomError("Invalid Credentials", 404);
     return next(error);
   }
-  if(userFind && !userFind.verified){
+  if (userFind && !userFind.verified) {
     const error = new CustomError("verifiy your email", 404);
     return next(error);
   }
 
-  if(userFind && !userFind.isActive){
+  if (userFind && !userFind.isActive) {
     const error = new CustomError("Not Allowed to access", 404);
     return next(error);
   }
@@ -148,4 +135,11 @@ const logOutUser = asyncErrorHandler(async (req, res, next) => {
   }),
     res.status(200).json({ message: "log out" });
 });
-export { getUser, registerUser, loginUser, getAllDetailsUser, logOutUser,verifyGmail };
+export {
+  getUser,
+  registerUser,
+  loginUser,
+  getAllDetailsUser,
+  logOutUser,
+  verifyGmail,
+};
