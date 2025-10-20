@@ -4,6 +4,7 @@ import asyncErrorHandler from "../utils/asyncErrorHandler.js";
 import jwt from "jsonwebtoken";
 import { CustomError } from "../utils/customerError.js";
 import sendEmail from "../utils/sendEmail.js";
+import crypto from "crypto";
 
 const singToken = (id, name) => {
   return jwt.sign({ id, name }, process.env.JWT_SECRET, {
@@ -149,6 +150,165 @@ const logOutUser = asyncErrorHandler(async (req, res, next) => {
     expires: new Date(0),
   });
   res.status(200).json({ message: "log out" });
+});
+
+// ========================================
+// PASSWORD RESET FUNCTIONS
+// ========================================
+
+// Forgot Password - Send reset email
+const forgotPassword = asyncErrorHandler(async (req, res, next) => {
+  const { email } = req.body;
+
+  if (!email) {
+    const error = new CustomError("Please provide your email", 400);
+    return next(error);
+  }
+
+  // Find user by email (username)
+  const userDoc = await user.findOne({ username: email });
+
+  if (!userDoc) {
+    const error = new CustomError("No user found with this email", 404);
+    return next(error);
+  }
+
+  // Generate reset token
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  // Hash token before saving to database
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  // Save hashed token and expiry to user
+  userDoc.resetPasswordToken = hashedToken;
+  userDoc.resetPasswordExpires = Date.now() + 3600000; // 1 hour from now
+
+  await userDoc.save();
+
+  // Create reset URL
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+  // Email message
+  const message = `
+    <h2>Password Reset Request</h2>
+    <p>Hello ${userDoc.name},</p>
+    <p>You requested to reset your password. Please click the link below to reset your password:</p>
+    <a href="${resetUrl}" style="display: inline-block; padding: 10px 20px; background-color: #2a9d8f; color: white; text-decoration: none; border-radius: 5px;">Reset Password</a>
+    <p>This link will expire in 1 hour.</p>
+    <p>If you didn't request this, please ignore this email.</p>
+    <br>
+    <p>Best regards,<br>House of Cambridge Team</p>
+  `;
+
+  try {
+    await sendEmail({
+      email: userDoc.username,
+      subject: "Password Reset Request",
+      message,
+    });
+
+   res.status(200).json({
+  success: true, // ← ADD THIS LINE
+  message: "Password reset link sent to your email",
+});
+  } catch (error) {
+    // Clear reset token if email fails
+    userDoc.resetPasswordToken = undefined;
+    userDoc.resetPasswordExpires = undefined;
+    await userDoc.save();
+
+    const err = new CustomError("Error sending email. Please try again later.", 500);
+    return next(err);
+  }
+});
+
+// Reset Password - Update password with token
+const resetPassword = asyncErrorHandler(async (req, res, next) => {
+  const { token } = req.params;
+  const { password, confirmPassword } = req.body;
+
+  // Validate passwords
+  if (!password || !confirmPassword) {
+    const error = new CustomError("Please provide password and confirm password", 400);
+    return next(error);
+  }
+
+  if (password !== confirmPassword) {
+    const error = new CustomError("Passwords do not match", 400);
+    return next(error);
+  }
+
+  if (password.length < 8) {
+    const error = new CustomError("Password must be at least 8 characters long", 400);
+    return next(error);
+  }
+
+  // Hash the token from URL
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
+
+  // Find user with valid token and not expired
+  const userDoc = await user.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpires: { $gt: Date.now() },
+  });
+
+  if (!userDoc) {
+    const error = new CustomError("Invalid or expired reset token", 400);
+    return next(error);
+  }
+
+  // Hash new password
+  bcrypt.genSalt(10, function (err, salt) {
+    if (err) {
+      const error = new CustomError("Error processing password", 500);
+      return next(error);
+    }
+    
+    bcrypt.hash(password, salt, async function (err, hash) {
+      if (err) {
+        const error = new CustomError("Error processing password", 500);
+        return next(error);
+      }
+
+      // Update password and clear reset token
+      userDoc.password = hash;
+      userDoc.resetPasswordToken = undefined;
+      userDoc.resetPasswordExpires = undefined;
+
+      await userDoc.save();
+
+      // Send confirmation email
+      const message = `
+        <h2>Password Reset Successful</h2>
+        <p>Hello ${userDoc.name},</p>
+        <p>Your password has been successfully reset.</p>
+        <p>If you did not make this change, please contact us immediately.</p>
+        <br>
+        <p>Best regards,<br>House of Cambridge Team</p>
+      `;
+
+      try {
+        await sendEmail({
+          email: userDoc.username,
+          subject: "Password Reset Successful",
+          message,
+        });
+      } catch (emailError) {
+        console.error("Error sending confirmation email:", emailError);
+      }
+
+    res.status(200).json({
+  success: true, // ← ADD THIS LINE
+  message: "Password reset successful. You can now login with your new password.",
+});
+    });
+  });
 });
 
 // ========================================
@@ -353,6 +513,8 @@ export {
   getAllDetailsUser,
   logOutUser,
   verifyGmail,
+  forgotPassword,
+  resetPassword,
   getUserCart,
   addToCart,
   removeFromCart,

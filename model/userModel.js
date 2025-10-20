@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
-  // ✅ Add cart field
+  // Cart field
   cart: [
     {
       productId: {
@@ -50,6 +50,13 @@ const userSchema = new mongoose.Schema({
       },
     },
   ],
+  // Password reset fields
+  resetPasswordToken: {
+    type: String,
+  },
+  resetPasswordExpires: {
+    type: Date,
+  },
 }, { timestamps: true });
 
 const User = mongoose.model("user", userSchema);
