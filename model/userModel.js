@@ -1,36 +1,56 @@
 import mongoose from "mongoose";
 
-const userSchema= new mongoose.Schema({
-    name:{
-        type:String,
-        required:[true,'name is required']
-    },
-    username:{
-        type:String,
-        required:[true,"please enter your username"]
-    },
-    phoneNo:{
-        type:Number,
-        required:[true,'please enter your number']
-    },
-    password:{
-        type:String,
-        required:[true,"please enter password"],
-        minlength:8,
-        // select:false
-    },
-    verified: { type: Boolean, default: true },
-    isActive: {
-        type: Boolean,
-        default: true,
-        // select:false
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  phoneNo: {
+    type: String,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
+  },
+  verified: {
+    type: Boolean,
+    default: false,
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
+  // ✅ Add cart field
+  cart: [
+    {
+      productId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "product",
+        required: true,
       },
-    role:{
-        type:String,
-        default:'user'
-    }
-})
+      quantity: {
+        type: Number,
+        required: true,
+        default: 1,
+        min: 1,
+      },
+      addedAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
+}, { timestamps: true });
 
-
-const User=mongoose.model('user',userSchema);
+const User = mongoose.model("user", userSchema);
 export default User;

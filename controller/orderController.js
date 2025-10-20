@@ -1,7 +1,53 @@
-import order from "../model/order.js";
 import Payment from "../model/paymentModel.js";
 import asyncErrorHandler from "../utils/asyncErrorHandler.js";
 import md5 from "crypto-js/md5.js";
+
+const addOrder = asyncErrorHandler(async (req, res, next) => {
+  console.log("📥 Received order request");
+  console.log("Body:", req.body);
+  
+  const { user, items, total, billDetails } = req.body;
+  
+  // Validation
+  if (!user || !items || !total || !billDetails) {
+    console.error("❌ Missing required fields");
+    return res.status(400).json({ 
+      message: "Missing required fields",
+      received: { user: !!user, items: !!items, total: !!total, billDetails: !!billDetails }
+    });
+  }
+  
+  if (!Array.isArray(items) || items.length === 0) {
+    console.error("❌ Invalid items array");
+    return res.status(400).json({ message: "Cart is empty or invalid" });
+  }
+  
+  try {
+    console.log("💾 Creating order in database...");
+    const newOrder = await Payment.create({ 
+      user, 
+      items, 
+      total, 
+      billDetails,
+      status: 1, // Pending status
+      createdAt: new Date()
+    });
+    
+    console.log("✅ Order created successfully:", newOrder._id);
+    
+    return res.status(201).json({ 
+      success: true,
+      message: "Order created successfully",
+      orderId: newOrder._id 
+    });
+  } catch (error) {
+    console.error("❌ Error creating order:", error);
+    return res.status(500).json({ 
+      message: "Failed to create order",
+      error: error.message 
+    });
+  }
+});
 
 const payhereNotify = asyncErrorHandler(async (req, res, next) => {
   const paymentDetails = req.body;
@@ -20,100 +66,30 @@ const payhereNotify = asyncErrorHandler(async (req, res, next) => {
   const calculatedHash = md5(hashString).toString().toUpperCase();
 
   if (calculatedHash === paymentDetails.md5sig) {
-    // Hash matches, process the payment
-    console.log("Payment verified:", paymentDetails);
-    // Perform actions like updating order status, sending confirmation email, etc.
-
-    res
-      .status(200)
-      .json({ success: true, message: "Payment verified and order saved." });
+    console.log("✅ Payment verified:", paymentDetails);
+    res.status(200).json({ success: true, message: "Payment verified and order saved." });
   } else {
-    // Hash does not match, reject the notification
-    console.error("Payment verification failed:", paymentDetails);
+    console.error("❌ Payment verification failed:", paymentDetails);
     res.sendStatus(400);
   }
 });
-// const paymentSession = asyncErrorHandler(async (req, res, next) => {
-//   const stripe = Stripe(process.env.STRIPE_SECRET);
-//   const { total } = req.body;
-//   const totalAmountInCents = parseInt(parseFloat(total) * 100);
-//   const lineItems = [
-//     {
-//       price_data: {
-//         currency: "usd",
-//         product_data: {
-//           name: "Total Order Amount",
-//         },
-//         unit_amount: totalAmountInCents,
-//       },
-//       quantity: 1,
-//     },
-//   ];
-
-//   const session = await await stripe.checkout.sessions.create({
-//     payment_method_types: ["card"],
-//     line_items: lineItems,
-//     mode: "payment",
-//     success_url:`${process.env.BASE_URL}/success`,
-//     cancel_url: `${process.env.BASE_URL}/Login`,
-//   });
-
-//   res.json({ id: session.id });
-// });
-
-const addOrder = asyncErrorHandler(async (req, res, next) => {
-  const { user, items, total, billDetails } = req.body;
-  const addOrder = await Payment.create({ user, items, total, billDetails });
-  return res.status(201).json({ message: "ok" });
-  // // Assuming billDetails contains recipient's information
-  // const recipient = billDetails.length > 0 ? billDetails[0] : null;
-  // if (!recipient) {
-  //   return res.status(400).json({ message: "Billing details are missing." });
-  // }
-  // // Create email content
-  // let emailContent = `Dear ${recipient.name},\n\nYour order has been placed successfully.\n\nOrder Details:\n`;
-  // items.forEach((item) => {
-  //   emailContent += `Product: ${item.productName}, Quantity: ${item.quantity}, Subtotal: ${item.subtotal}\n`;
-  // });
-  // emailContent += `\nTotal: ${total}\n\nThank you for your order.`;
-  // // Set up Nodemailer transporter
-  // const transporter = createTransport({
-  //   host: process.env.HOST,
-  //   service: process.env.SERVICE,
-  //   port: Number(process.env.EMAIL_PORT),
-  //   secure: Boolean(process.env.SECURE),
-  //   auth: {
-  //     user: process.env.USER,
-  //     pass: process.env.PASS,
-  //   },
-  // });
-  // // Sending the email
-  // await transporter.sendMail({
-  //   from: "udithaindunil5@gmail.com",
-  //   to: recipient.email,
-  //   subject: "Order Confirmation",
-  //   text: emailContent,
-  // });
-  // return res.status(201).json({ message: "ok" });
-});
-
-const editOrder = async (req, res) => {};
 
 const getOrderWithProductDetails = asyncErrorHandler(async (req, res, next) => {
   const orders = await Payment.find({})
-    .sort({ createdAt: -1 }) // Sort by 'createdAt' in descending order
-    .populate("user", "-password") // Populate the user field and exclude password
+    .sort({ createdAt: -1 })
+    .populate("user", "-password")
     .populate({
       path: "items.product",
       model: "product",
       populate: [
-        { path: "categoryId", model: "category" }, // Populate category
-        { path: "brandId", model: "brand" }, // Populate brand
-      ], // Assuming 'Product' is your product model name
+        { path: "categoryId", model: "category" },
+        { path: "brandId", model: "brand" },
+      ],
     });
 
   return res.json(orders);
 });
+
 const getOneDetails = asyncErrorHandler(async (req, res, next) => {
   const orderId = req.params.id;
   const details = await Payment.findById(orderId).populate({
@@ -125,11 +101,13 @@ const getOneDetails = asyncErrorHandler(async (req, res, next) => {
 });
 
 const getOrdersByUser = asyncErrorHandler(async (req, res, next) => {
-  const userId = req.params.userId; // Assuming you're getting the user ID from the route parameters
-  const userOrders = await Payment.find({ user: userId }).sort({ createdAt: -1 }).populate({
-    path: "items.product",
-    model: "product",
-  });
+  const userId = req.params.userId;
+  const userOrders = await Payment.find({ user: userId })
+    .sort({ createdAt: -1 })
+    .populate({
+      path: "items.product",
+      model: "product",
+    });
 
   if (!userOrders) {
     return res.status(404).send("No orders found for this user.");
@@ -167,16 +145,15 @@ const updateStatus = asyncErrorHandler(async (req, res, next) => {
         statusMessage = "Pending";
     }
 
-    const response = await Payment.findByIdAndUpdate(
+    await Payment.findByIdAndUpdate(
       orderId,
-      { status: newStatus }, // Update the status based on current status
+      { status: newStatus },
       { new: true }
     );
 
     res.status(200).json({ message: `Status updated to ${statusMessage}` });
-
   } catch (error) {
-    console.error("Error fetching payment details:", error);
+    console.error("Error updating order status:", error);
     return res.status(500).json({ message: "Server error" });
   }
 });
