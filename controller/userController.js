@@ -17,42 +17,61 @@ const registerUser = asyncErrorHandler(async (req, res, next) => {
   
   // Check validation
   if (!name) {
-    const error = new CustomError("Enter the user name", 404);
+    const error = new CustomError("Enter the user name", 400);
     return next(error);
   }
   if (!password || password.length < 8) {
-    const error = new CustomError("Password must be at least 8 characters long", 404);
+    const error = new CustomError("Password must be at least 8 characters long", 400);
     return next(error);
   }
+  
+  // Check if user already exists
   const exits = await user.findOne({ username });
   if (exits) {
-    const error = new CustomError("User already exists. Please use a different email.", 404);
+    const error = new CustomError("User already exists. Please use a different email.", 409);
     return next(error);
   }
   
   bcrypt.genSalt(10, function (err, salt) {
     if (err) {
-      const error = new CustomError("Hash error", 404);
+      const error = new CustomError("Hash error", 500);
       return next(error);
     }
     bcrypt.hash(password, salt, async function (err, hash) {
       if (err) {
-        const error = new CustomError("Hash error", 404);
+        const error = new CustomError("Hash error", 500);
         return next(error);
       }
       
-      // ✅ FIXED: Set verified and isActive to true
+      // Create new user
       const userCreate = await user.create({
         name,
         username,
         phoneNo,
         password: hash,
         role: role || 'user',
-        verified: true,     // ✅ Allow immediate login
-        isActive: true,     // ✅ Ensure user is active
+        verified: true,     // Allow immediate login
+        isActive: true,     // Ensure user is active
       });
 
-      res.status(201).send({ 
+      // Generate JWT token
+      const token = singToken(userCreate._id, userCreate.username);
+
+      // Get user without password
+      const newUser = await user.findById(userCreate._id).select("-password");
+
+      // Set cookie
+      res.cookie("token", token, {
+        httpOnly: true,
+        path: "/",
+        expires: new Date(Date.now() + 1000 * 86400),
+        sameSite: "lax",
+      });
+
+      // Return user and token (matching login response format)
+      res.status(201).json({ 
+        token,
+        newUser,
         message: "Account created successfully" 
       });
     });
