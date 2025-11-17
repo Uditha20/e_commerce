@@ -27,13 +27,16 @@ app.use(cookieParser());
 const port = 5000;
 app.use(json());
 app.use(express.urlencoded({ extended: false }));
-
 app.use(
   cors({
-    origin: [process.env.BASE_URL, process.env.BASE_URL_TWO, process.env.DASH_URL],
+    origin: [
+      process.env.BASE_URL,      // http://localhost:3000
+      process.env.DASH_URL       // http://localhost:3001
+    ],
     credentials: true,
   })
 );
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
