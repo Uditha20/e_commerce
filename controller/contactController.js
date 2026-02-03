@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import Message from '../model/Message.js';
 
 export const sendContactEmail = async (req, res) => {
   try {
@@ -12,85 +12,165 @@ export const sendContactEmail = async (req, res) => {
       });
     }
 
-    // DETAILED DEBUGGING
-    console.log('=== EMAIL CONFIGURATION DEBUG ===');
-    console.log('EMAIL_USER:', process.env.EMAIL_USER);
-    console.log('EMAIL_PASS exists:', !!process.env.EMAIL_PASS);
-    console.log('EMAIL_PASS length:', process.env.EMAIL_PASS?.length);
-    console.log('EMAIL_PORT:', process.env.EMAIL_PORT);
-    console.log('SECURE:', process.env.SECURE);
-    console.log('=================================');
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid email format'
+      });
+    }
 
-    // Create transporter
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      },
-      debug: true, // Enable debug output
-      logger: true // Log information to console
+    // Save message to database
+    const newMessage = new Message({
+      first_name,
+      email,
+      subject,
+      message,
+      status: 'unread'
     });
 
-    // Verify connection
-    console.log('Testing SMTP connection...');
-    await transporter.verify();
-    console.log('✅ SMTP connection successful!');
-
-    // Email to company
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: 'raveeshaamarawickrama200@gmail.com',
-      subject: `Contact Form: ${subject}`,
-      html: `
-        <h2>New Contact Form Submission</h2>
-        <p><strong>Name:</strong> ${first_name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Subject:</strong> ${subject}</p>
-        <p><strong>Message:</strong></p>
-        <p>${message}</p>
-      `
-    };
-
-    console.log('Sending email to company...');
-    await transporter.sendMail(mailOptions);
-    console.log('✅ Email sent to company');
-
-    // Auto-reply to user
-    const autoReply = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: 'Thank you for contacting House of Cambridge',
-      html: `
-        <h2>Thank You for Reaching Out!</h2>
-        <p>Dear ${first_name},</p>
-        <p>We have received your message and will get back to you soon.</p>
-        <br>
-        <p>Best regards,</p>
-        <p>House of Cambridge Team</p>
-      `
-    };
-
-    console.log('Sending auto-reply to user...');
-    await transporter.sendMail(autoReply);
-    console.log('✅ Auto-reply sent to user');
+    await newMessage.save();
 
     res.status(200).json({
       success: true,
-      message: 'Email sent successfully'
+      message: 'Message sent successfully',
+      data: newMessage
     });
 
   } catch (error) {
-    console.error('❌ EMAIL ERROR:', error);
-    console.error('Error code:', error.code);
-    console.error('Error message:', error.message);
+    console.error('❌ MESSAGE SAVE ERROR:', error);
     
     res.status(500).json({
       success: false,
-      message: 'Failed to send email',
-      error: error.message
+      message: 'Failed to send message. Please try again later.',
+      ...(process.env.NODE_ENV === 'development' && { 
+        error: error.message
+      })
+    });
+  }
+};
+
+// Get all messages
+export const getAllMessages = async (req, res) => {
+  try {
+    const messages = await Message.find().sort({ createdAt: -1 });
+    
+    res.status(200).json({
+      success: true,
+      count: messages.length,
+      data: messages
+    });
+  } catch (error) {
+    console.error('❌ GET MESSAGES ERROR:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch messages'
+    });
+  }
+};
+
+// Get single message
+export const getMessage = async (req, res) => {
+  try {
+    const message = await Message.findById(req.params.id);
+    
+    if (!message) {
+      return res.status(404).json({
+        success: false,
+        message: 'Message not found'
+      });
+    }
+
+    // Mark as read when viewed
+    if (message.status === 'unread') {
+      message.status = 'read';
+      await message.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      data: message
+    });
+  } catch (error) {
+    console.error('❌ GET MESSAGE ERROR:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch message'
+    });
+  }
+};
+
+// Update message status
+export const updateMessageStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    
+    const message = await Message.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true, runValidators: true }
+    );
+
+    if (!message) {
+      return res.status(404).json({
+        success: false,
+        message: 'Message not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: message
+    });
+  } catch (error) {
+    console.error('❌ UPDATE MESSAGE ERROR:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update message status'
+    });
+  }
+};
+
+// Delete message
+export const deleteMessage = async (req, res) => {
+  try {
+    const message = await Message.findByIdAndDelete(req.params.id);
+
+    if (!message) {
+      return res.status(404).json({
+        success: false,
+        message: 'Message not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Message deleted successfully'
+    });
+  } catch (error) {
+    console.error('❌ DELETE MESSAGE ERROR:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete message'
+    });
+  }
+};
+
+// Get unread message count
+export const getUnreadCount = async (req, res) => {
+  try {
+    const count = await Message.countDocuments({ status: 'unread' });
+    
+    res.status(200).json({
+      success: true,
+      count
+    });
+  } catch (error) {
+    console.error('❌ GET UNREAD COUNT ERROR:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch unread count'
     });
   }
 };
